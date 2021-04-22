@@ -66,7 +66,7 @@ def addSong(analyzer, song):
     updateDateIndex(analyzer['dateIndex'], song)
     return analyzer
 
-def updateDateIndex(map, crime):
+def updateDateIndex(map, song):
     """
     Se toma la fecha de la canción y se busca si ya existe en el arbol
     dicha fecha.  Si es asi, se adiciona a su lista de canciones
@@ -74,8 +74,8 @@ def updateDateIndex(map, crime):
     Si no se encuentra creado un nodo para esa fecha en el arbol
     se crea y se actualiza el indice de tipos de canciones
     """
-    occurreddate = song['OCCURRED_ON_DATE']
-    songdate = datetime.datetime.strptime(occurreddate, '%Y-%m-%d %H:%M:%S')
+    createdat = song["created_at"]
+    songdate = datetime.datetime.strptime(createdat, '%Y-%m-%d %H:%M:%S')
     entry = om.get(map, songdate.date())
     if entry is None:
         datentry = newDataEntry(song)
@@ -87,39 +87,69 @@ def updateDateIndex(map, crime):
 
 # Funciones para creacion de datos
 
-def addDateIndex(datentry, crime):
+def addDateIndex(datentry, song):
     """
     Actualiza un indice de caracteristica de contenido.  Este indice tiene una lista
-    de canciones y una tabla de hash cuya llave es la caracteristica de contenido y
-    el valor es una lista con las cancioens de dicha caracteristica en la fecha que
+    de canciones y una tabla de hash cuya llave es el hashtag y
+    el valor es una lista con las canciones que tienen el hashtag en la fecha que
     se está consultando (dada por el nodo del arbol)
     """
     lst = datentry['lstsongs']
     lt.addLast(lst, song)
-    ContentIndex = datentry['ContentIndex']
-    offentry = m.get(ContentIndex, song['instrumentalness'])
+    hashtagIndex = datentry['hashtagIndex']
+    offentry = mp.get(hashtagIndex, song['hashtag'])
     if (offentry is None):
-        entry = newOffenseEntry(song['instrumentalness'], song)
-        lt.addLast(entry['lstoffenses'], song)
-        m.put(offenseIndex, crime['instrumentalness'], entry)
+        entry = newHashtagEntry(song['hashtag'], song)
+        lt.addLast(entry['lsthashtags'], song)
+        mp.put(hashtagIndex, song['hashtag'], entry)
     else:
         entry = me.getValue(offentry)
-        lt.addLast(entry['lstoffenses'], crime)
+        lt.addLast(entry['lsthashtags'], song)
     return datentry
 
-def newDataEntry(crime):
+def newDataEntry(song):
     """
     Crea una entrada en el indice por fechas, es decir en el arbol
     binario.
     """
-    entry = {'offenseIndex': None, 'lstsongs': None}
-    entry['offenseIndex'] = m.newMap(numelements=30,
+    entry = {'hashtagIndex': None, 'lstsongs': None}
+    entry['hashtagIndex'] = mp.newMap(numelements=30,
                                      maptype='PROBING',
-                                     comparefunction=compareOffenses)
+                                     comparefunction=compareHashtags)
     entry['lstsongs'] = lt.newList('SINGLE_LINKED', compareDates)
     return entry
 
+def newHashtagEntry(hashtaggrp, song):
+    """
+    Crea una entrada en el indice por tipo de crimen, es decir en
+    la tabla de hash, que se encuentra en cada nodo del arbol.
+    """
+    hashtagentry = {'hashtag': None, 'lsthashtags': None}
+    hashtagentry['hashtag'] = hashtaggrp
+    hashtagentry['lsthashtags'] = lt.newList('SINGLELINKED', compareHashtags)
+    return hashtagentry
+
 # Funciones de consulta
+
+def songsSize(analyzer):
+    """
+    Número de crimenes
+    """
+    return lt.size(analyzer['songs'])
+
+def indexHeight(analyzer):
+    """
+    Altura del arbol
+    """
+    return om.height(analyzer['dateIndex'])
+
+def indexSize(analyzer):
+    """
+    Numero de elementos en el indice
+    """
+    return om.size(analyzer['dateIndex'])
+
+
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
@@ -141,6 +171,18 @@ def compareDates(date1, date2):
     if (date1 == date2):
         return 0
     elif (date1 > date2):
+        return 1
+    else:
+        return -1
+
+def compareHashtags(hashtag1, hashtag2):
+    """
+    Compara dos hashtags
+    """
+    hashtag = me.getKey(hashtag2)
+    if (hashtag1 == hashtag):
+        return 0
+    elif (hashtag1 > hashtag):
         return 1
     else:
         return -1

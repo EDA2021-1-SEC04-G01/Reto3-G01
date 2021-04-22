@@ -21,7 +21,8 @@
  """
 
 import config as cf
-import model
+from App import model
+import datetime
 import csv
 
 
@@ -31,8 +32,47 @@ El controlador se encarga de mediar entre la vista y el modelo.
 
 # Inicialización del Catálogo de libros
 
+def init():
+    """
+    Llama la funcion de inicializacion  del modelo.
+    """
+    # catalog es utilizado para interactuar con el modelo
+    analyzer = model.newAnalyzer()
+    return analyzer
+
+def loadData(analyzer, songsfile):
+    """
+    Carga los datos de los archivos CSV en el modelo
+    """
+    songsfile = cf.data_dir + songsfile
+    input_file = csv.DictReader(open(songsfile, encoding="utf-8"),
+                                delimiter=",")
+    for song in input_file:
+        model.addSong(analyzer, song)
+    return analyzer
+
 # Funciones para la carga de datos
 
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
+
+def songsSize(analyzer):
+    """
+    Numero de crimenes leidos
+    """
+    return model.songsSize(analyzer)
+
+
+def indexHeight(analyzer):
+    """
+    Altura del indice (arbol)
+    """
+    return model.indexHeight(analyzer)
+
+def indexSize(analyzer):
+    """
+    Numero de nodos en el arbol
+    """
+    return model.indexSize(analyzer)
+

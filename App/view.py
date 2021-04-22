@@ -50,7 +50,7 @@ def printMenu():
 
 catalog = None
 
-crimefile = 'user_track_hashtag_timestamp-small.csv'
+songfile = 'user_track_hashtag_timestamp-small.csv'
 cont = None
 
 """
@@ -68,7 +68,7 @@ while True:
     elif int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
         controller.loadData(cont, songfile)
-        print('Canciones cargadas: ' + str(controller.crimesSize(cont)))
+        
         print('Altura del arbol: ' + str(controller.indexHeight(cont)))
         print('Elementos en el arbol: ' + str(controller.indexSize(cont)))
 
