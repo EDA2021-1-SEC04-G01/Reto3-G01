@@ -34,12 +34,24 @@ se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
 
+
+
 def printMenu():
     print("Bienvenido")
+    print("0- Inicializar analizador")
     print("1- Cargar información en el catálogo")
-    print("2- ")
+    print("2- Consultar reproducciones con característica de contenido y un rango")
+    print ("3- Encontrar música para festejar")
+    print ("4- Encontrar música para estudiar")
+    print ("5- Estudiar los géneros musicales")
+    print("6- Indicar el género musical más escuchado en el tiempo")
+    print("7- Salir")
+    print("*******************************************")
 
 catalog = None
+
+crimefile = 'user_track_hashtag_timestamp-small.csv'
+cont = None
 
 """
 Menu principal
@@ -47,8 +59,18 @@ Menu principal
 while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
-    if int(inputs[0]) == 1:
+
+    if int(inputs[0]) == 0:
+        print("\nInicializando....")
+        # cont es el controlador que se usará de acá en adelante
+        cont = controller.init()
+
+    elif int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
+        controller.loadData(cont, songfile)
+        print('Canciones cargadas: ' + str(controller.crimesSize(cont)))
+        print('Altura del arbol: ' + str(controller.indexHeight(cont)))
+        print('Elementos en el arbol: ' + str(controller.indexSize(cont)))
 
     elif int(inputs[0]) == 2:
         pass
