@@ -76,17 +76,18 @@ while True:
         print()
         print('Últimos 5 eventos de escucha cargados: ' + str(controller.lastTracks(cont)))
 
-    #elif int(inputs[0]) == 2:
-        #char=input("\nDigite la característica de contenido que desea averiguar: ")
-        #print("\nBuscando número de reproducciones con "+char+" en un rango: ")
-        #minValue = input("Valor mínimo: ")
-        #maxValue = input("Valor máximo: ")
-        #totalTracks = controller.getTracksByRangeChar(cont,char, minValue, maxValue)
-        #totalArtists=
-        #print("Para "+char+"entre "+minValue+" y "+maxValue" :")
-        #print("\nTotal de reproducciones: " + str(totalTracks))
-        #print("Total de artistas únicos: " + str(totalArtists))
-        #pass
+    elif int(inputs[0]) == 2:   
+        char=input("\nDigite la característica de contenido que desea averiguar: ")
+        controller.loadDataChar(cont, songfile, char)
+        print("\nBuscando número de reproducciones con "+char+" en un rango: ")
+        minValue = input("Valor mínimo: ")
+        maxValue = input("Valor máximo: ")
+        totalTracks = controller.getTracksByRangeChar(cont, minValue, maxValue)
+        totalArtists=controller.artistsCharSize(cont, minValue, maxValue)
+        print("\nPara "+char+" entre "+minValue+" y "+maxValue+":")
+        print("Total de reproducciones: " + str(totalTracks))
+        print("Total de artistas únicos: " + str(totalArtists))
+        pass
 
     else:
         sys.exit(0)

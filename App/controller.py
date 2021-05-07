@@ -40,6 +40,8 @@ def init():
     analyzer = model.newAnalyzer()
     return analyzer
 
+# Funciones para la carga de datos
+
 def loadData(analyzer, songsfile):
     """
     Carga los datos de los archivos CSV en el modelo
@@ -51,7 +53,17 @@ def loadData(analyzer, songsfile):
         model.addTrack(analyzer, track)
     return analyzer
 
-# Funciones para la carga de datos
+def loadDataChar(analyzer, songsfile, char):
+    """
+    Carga los datos de los archivos CSV en el modelo personalizado para la búsqueda de la característica
+    """
+
+    songsfile = cf.data_dir + songsfile
+    input_file = csv.DictReader(open(songsfile, encoding="utf-8"),
+                                delimiter=",")
+    for track in input_file:
+        model.addTrackChar(analyzer, track, char)
+    return analyzer
 
 # Funciones de ordenamiento
 
@@ -94,9 +106,15 @@ def artistsSize(analyzer):
     """
     return model.artistsSize(analyzer)
 
-def getTracksByRangeChar(analyzer,char,minValue, maxValue):
+def getTracksByRangeChar(analyzer, minValue, maxValue):
     
-    return model.getTracksByRangeChar(analyzer,minValue, maxValue)
+    return model.getTracksByRangeChar(analyzer, minValue, maxValue)
+
+def artistsCharSize(analyzer, minValue, maxValue):
+    """
+    Numero de artistas
+    """
+    return model.artistsCharSize(analyzer,minValue, maxValue)
 
 
 

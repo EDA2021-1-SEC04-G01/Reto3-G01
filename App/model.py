@@ -31,7 +31,7 @@ from DISClib.ADT import map as mp
 from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
-import datetime
+from DISClib.ADT import map as m
 assert cf
 
 """
@@ -51,14 +51,17 @@ def newAnalyzer():
     """
     analyzer = {'tracks': None,
                 'songs': None,
-                'artists': None
+                'artists': None,
+                'char': None
                 }
 
     analyzer['tracks'] = lt.newList('SINGLE_LINKED', compareIds)
     analyzer['songs'] = om.newMap(omaptype='RBT',
-                                      comparefunction=compareSongs)
+                                      comparefunction=compareDates)
     analyzer['artists'] = om.newMap(omaptype='RBT',
-                                      comparefunction=compareArtists)
+                                      comparefunction=compareDates)
+    analyzer['char'] = om.newMap(omaptype='RBT',
+                                      comparefunction=compareDates)
     return analyzer
 
 # Funciones para agregar informacion al catalogo
@@ -101,21 +104,66 @@ def updateArtists(map, track):
     
     return map
 
+def addTrackChar(analyzer, track, char):
+    """
+    """
+    updateChar(analyzer['char'], track, char)
+    return analyzer
+
+def updateChar(map, track, char):
+    """
+    """
+    CharValue = track[char]
+    entry = om.get(map, CharValue)
+    if entry is None:
+        charentry = newDataEntry(track)
+        om.put(map, CharValue, charentry)
+    else:
+        charentry = me.getValue(entry)
+    
+    addCharIndex(charentry, track)
+    return map
+
+def addCharIndex(charentry, track):
+    """
+    Actualiza un indice de artistas.  Este indice tiene una lista
+    de tracks y una tabla de hash cuya llave es el artista y
+    el valor es una lista con los tracks de dicho artista en el valor de la característica que
+    se está consultando (dada por el nodo del arbol)
+    """
+    lst = charentry['lstTracks']
+    lt.addLast(lst, track)
+    index = charentry['info']
+    artistentry = m.get(index, track['artist_id'])
+    if (artistentry is None):
+        entry = newArtistEntry(track['artist_id'], track)
+        lt.addLast(entry['lstartists'], track)
+        m.put(index, track['artist_id'], entry)
+    else:
+        entry = me.getValue(artistentry)
+        lt.addLast(entry['lstartists'], track)
+    return charentry
 # Funciones para creacion de datos
 
 def newDataEntry(track):
     """
-    Crea una entrada en el indice por fechas, es decir en el arbol
-    binario.
     """
-    entry = {'artist': None, 'lsttracks': None}
-    entry['artist'] = mp.newMap(numelements=30,
+    entry = {'info': None, 'lstTracks': None}
+    entry['info'] = mp.newMap(numelements=30,
                                      maptype='PROBING',
-                                     comparefunction=compareHashtags)
-    entry['lsttracks'] = lt.newList('SINGLE_LINKED', compareSongs)
+                                     comparefunction=compareValue)
+    entry['lstTracks'] = lt.newList('SINGLE_LINKED', compareDates)
     return entry
 
-
+def newArtistEntry(artist, crime):
+    """
+    Crea una entrada en el indice por tipo de crimen, es decir en
+    la tabla de hash, que se encuentra en cada nodo del arbol.
+    """
+    artentry = {'artist': None, 'lstartists': None}
+    artentry['artist'] = artist
+    artentry['lstartists'] = lt.newList('SINGLELINKED', compareValue)
+    return artentry
 
 # Funciones de consulta
 
@@ -159,16 +207,20 @@ def artistsSize(analyzer):
     """
     return om.size(analyzer['artists'])
 
-def getTracksByRangeChar(analyzer,char, minValue, maxValue):
+def getTracksByRangeChar(analyzer, minValue, maxValue):
     """
     Retorna el numero de registros de eventos de escucha en un rango de una 
     característica de contenido dada.
     """
-    lst = om.values(analyzer[char], minValue, maxValue)
+    lst = om.values(analyzer['char'], minValue, maxValue)
     totTracks = 0
     for lstchar in lt.iterator(lst):
-        totTracks += lt.size(lstdate['lstTracks'])
+        totTracks += lt.size(lstchar['lstTracks'])
     return totTracks
+
+def artistsCharSize(analyzer,minValue, maxValue):
+
+    return lt.size(om.values(analyzer['char'], minValue, maxValue))
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
@@ -184,36 +236,25 @@ def compareIds(id1, id2):
     else:
         return -1
 
-def compareSongs(song1, song2):
+def compareDates(date1, date2):
     """
-    Compara dos canciones (ids)
+    Compara dos datos
     """
-    if (song1 == song2):
+    if (date1 == date2):
         return 0
-    elif (song1 > song2):
+    elif (date1 > date2):
         return 1
     else:
         return -1
 
-def compareArtists(artist1, artist2):
+def compareValue(value1, value2):
     """
-    Compara dos artistas
+    Compara dos tipos de valor de una característica
     """
-    if (artist1 == artist2):
+    value = me.getKey(value2)
+    if (value1 == value):
         return 0
-    elif (artist1 > artist2):
-        return 1
-    else:
-        return -1
-
-def compareHashtags(hashtag1, hashtag2):
-    """
-    Compara dos hashtags
-    """
-    hashtag = me.getKey(hashtag2)
-    if (hashtag1 == hashtag):
-        return 0
-    elif (hashtag1 > hashtag):
+    elif (value1 > value):
         return 1
     else:
         return -1
