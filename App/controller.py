@@ -47,8 +47,8 @@ def loadData(analyzer, songsfile):
     songsfile = cf.data_dir + songsfile
     input_file = csv.DictReader(open(songsfile, encoding="utf-8"),
                                 delimiter=",")
-    for song in input_file:
-        model.addSong(analyzer, song)
+    for track in input_file:
+        model.addTrack(analyzer, track)
     return analyzer
 
 # Funciones para la carga de datos
@@ -57,11 +57,11 @@ def loadData(analyzer, songsfile):
 
 # Funciones de consulta sobre el catálogo
 
-def songsSize(analyzer):
+def tracksSize(analyzer):
     """
     Numero de crimenes leidos
     """
-    return model.songsSize(analyzer)
+    return model.tracksSize(analyzer)
 
 
 def indexHeight(analyzer):
@@ -75,4 +75,30 @@ def indexSize(analyzer):
     Numero de nodos en el arbol
     """
     return model.indexSize(analyzer)
+
+def firstTracks(analyzer):
+    """
+    La menor llave del arbol
+    """
+    return model.firstTracks(analyzer)
+
+def lastTracks(analyzer):
+    """
+    La menor llave del arbol
+    """
+    return model.lastTracks(analyzer)
+
+def artistsSize(analyzer):
+    """
+    Numero de artistas
+    """
+    return model.artistsSize(analyzer)
+
+def getTracksByRangeChar(analyzer,char,minValue, maxValue):
+    
+    return model.getTracksByRangeChar(analyzer,minValue, maxValue)
+
+
+
+
 

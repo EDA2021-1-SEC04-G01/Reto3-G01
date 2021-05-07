@@ -45,117 +45,137 @@ def newAnalyzer():
     """ Inicializa el analizador
     Crea una lista vacia para guardar todas las canciones
     Se crean indices (Maps) por los siguientes criterios:
-    -Fechas
+    -canciones
+    -artistas
     Retorna el analizador inicializado.
     """
-    analyzer = {'songs': None,
-                'dateIndex': None
+    analyzer = {'tracks': None,
+                'songs': None,
+                'artists': None
                 }
 
-    analyzer['songs'] = lt.newList('SINGLE_LINKED', compareIds)
-    analyzer['dateIndex'] = om.newMap(omaptype='RBT',
-                                      comparefunction=compareDates)
+    analyzer['tracks'] = lt.newList('SINGLE_LINKED', compareIds)
+    analyzer['songs'] = om.newMap(omaptype='RBT',
+                                      comparefunction=compareSongs)
+    analyzer['artists'] = om.newMap(omaptype='RBT',
+                                      comparefunction=compareArtists)
     return analyzer
 
 # Funciones para agregar informacion al catalogo
 
-def addSong(analyzer, song):
+def addTrack(analyzer, track):
     """
     """
-    lt.addLast(analyzer['songs'], song)
-    updateDateIndex(analyzer['dateIndex'], song)
+    lt.addLast(analyzer['tracks'], track)
+    updateSongs(analyzer['songs'], track)
+    updateArtists(analyzer['artists'], track)
     return analyzer
 
-def updateDateIndex(map, song):
+def updateSongs(map, track):
     """
-    Se toma la fecha de la canción y se busca si ya existe en el arbol
-    dicha fecha.  Si es asi, se adiciona a su lista de canciones
-    y se actualiza el indice de tipos de canciones.
-    Si no se encuentra creado un nodo para esa fecha en el arbol
-    se crea y se actualiza el indice de tipos de canciones
+    Se toma el id de la canción y se busca si ya existe en el arbol
+    dicha cancion.  Si es asi, se adiciona a su lista de reproducciones
+    y se actualiza el indice de canciones.
+    Si no se encuentra creado un nodo para esa cancion en el arbol
+    se crea y se actualiza el indice de canciones
     """
-    createdat = song["created_at"]
-    songdate = datetime.datetime.strptime(createdat, '%Y-%m-%d %H:%M:%S')
-    entry = om.get(map, songdate.date())
+    songId = track["track_id"]
+    entry = om.get(map, songId)
     if entry is None:
-        datentry = newDataEntry(song)
-        om.put(map, songdate.date(), datentry)
+        songentry = newDataEntry(track)
+        om.put(map, songId, songentry)
     else:
-        datentry = me.getValue(entry)
-    addDateIndex(datentry, song)
+        songentry = me.getValue(entry)
+    return map
+
+def updateArtists(map, track):
+    """
+    """
+    artistId = track["artist_id"]
+    entry = om.get(map, artistId)
+    if entry is None:
+        artistentry = newDataEntry(track)
+        om.put(map, artistId, artistentry)
+    else:
+        artistentry = me.getValue(entry)
+    
     return map
 
 # Funciones para creacion de datos
 
-def addDateIndex(datentry, song):
-    """
-    Actualiza un indice de caracteristica de contenido.  Este indice tiene una lista
-    de canciones y una tabla de hash cuya llave es el hashtag y
-    el valor es una lista con las canciones que tienen el hashtag en la fecha que
-    se está consultando (dada por el nodo del arbol)
-    """
-    lst = datentry['lstsongs']
-    lt.addLast(lst, song)
-    hashtagIndex = datentry['hashtagIndex']
-    offentry = mp.get(hashtagIndex, song['hashtag'])
-    if (offentry is None):
-        entry = newHashtagEntry(song['hashtag'], song)
-        lt.addLast(entry['lsthashtags'], song)
-        mp.put(hashtagIndex, song['hashtag'], entry)
-    else:
-        entry = me.getValue(offentry)
-        lt.addLast(entry['lsthashtags'], song)
-    return datentry
-
-def newDataEntry(song):
+def newDataEntry(track):
     """
     Crea una entrada en el indice por fechas, es decir en el arbol
     binario.
     """
-    entry = {'hashtagIndex': None, 'lstsongs': None}
-    entry['hashtagIndex'] = mp.newMap(numelements=30,
+    entry = {'artist': None, 'lsttracks': None}
+    entry['artist'] = mp.newMap(numelements=30,
                                      maptype='PROBING',
                                      comparefunction=compareHashtags)
-    entry['lstsongs'] = lt.newList('SINGLE_LINKED', compareDates)
+    entry['lsttracks'] = lt.newList('SINGLE_LINKED', compareSongs)
     return entry
 
-def newHashtagEntry(hashtaggrp, song):
-    """
-    Crea una entrada en el indice por tipo de crimen, es decir en
-    la tabla de hash, que se encuentra en cada nodo del arbol.
-    """
-    hashtagentry = {'hashtag': None, 'lsthashtags': None}
-    hashtagentry['hashtag'] = hashtaggrp
-    hashtagentry['lsthashtags'] = lt.newList('SINGLELINKED', compareHashtags)
-    return hashtagentry
+
 
 # Funciones de consulta
 
-def songsSize(analyzer):
+def tracksSize(analyzer):
     """
-    Número de crimenes
+    Número de reproducciones
     """
-    return lt.size(analyzer['songs'])
+    return lt.size(analyzer['tracks'])
 
 def indexHeight(analyzer):
     """
     Altura del arbol
     """
-    return om.height(analyzer['dateIndex'])
+    return om.height(analyzer['songs'])
 
 def indexSize(analyzer):
     """
     Numero de elementos en el indice
     """
-    return om.size(analyzer['dateIndex'])
+    return om.size(analyzer['songs'])
 
+def firstTracks(analyzer):
+    """
+    5 primeros eventos cargados 
+    """
+    return lt.subList(analyzer['tracks'],0,4)
+
+def lastTracks(analyzer):
+    """
+    5 últimos eventos cargados 
+    """
+    
+    final=int(tracksSize(analyzer))
+    inicio=final-3
+
+    return lt.subList(analyzer['tracks'],inicio,4)
+
+def artistsSize(analyzer):
+    """
+    Numero de artistas
+    """
+    return om.size(analyzer['artists'])
+
+def getTracksByRangeChar(analyzer,char, minValue, maxValue):
+    """
+    Retorna el numero de registros de eventos de escucha en un rango de una 
+    característica de contenido dada.
+    """
+    lst = om.values(analyzer[char], minValue, maxValue)
+    totTracks = 0
+    for lstchar in lt.iterator(lst):
+        totTracks += lt.size(lstdate['lstTracks'])
+    return totTracks
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
 def compareIds(id1, id2):
     """
-    Compara dos canciones
+    Compara dos tracks
     """
     if (id1 == id2):
         return 0
@@ -164,13 +184,24 @@ def compareIds(id1, id2):
     else:
         return -1
 
-def compareDates(date1, date2):
+def compareSongs(song1, song2):
     """
-    Compara dos fechas
+    Compara dos canciones (ids)
     """
-    if (date1 == date2):
+    if (song1 == song2):
         return 0
-    elif (date1 > date2):
+    elif (song1 > song2):
+        return 1
+    else:
+        return -1
+
+def compareArtists(artist1, artist2):
+    """
+    Compara dos artistas
+    """
+    if (artist1 == artist2):
+        return 0
+    elif (artist1 > artist2):
         return 1
     else:
         return -1

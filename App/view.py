@@ -50,7 +50,7 @@ def printMenu():
 
 catalog = None
 
-songfile = 'user_track_hashtag_timestamp-small.csv'
+songfile = 'context_content_features-small.csv'
 cont = None
 
 """
@@ -68,12 +68,25 @@ while True:
     elif int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
         controller.loadData(cont, songfile)
-        
+        print('Eventos de escucha cargados: ' + str(controller.tracksSize(cont)))
         print('Altura del arbol: ' + str(controller.indexHeight(cont)))
-        print('Elementos en el arbol: ' + str(controller.indexSize(cont)))
+        print('Elementos en el arbol (pistas de audio cargadas) : ' + str(controller.indexSize(cont)))
+        print('Artistas cargados: ' + str(controller.artistsSize(cont)))
+        print('Primeros 5 eventos de escucha cargados: ' + str(controller.firstTracks(cont)))
+        print()
+        print('Últimos 5 eventos de escucha cargados: ' + str(controller.lastTracks(cont)))
 
-    elif int(inputs[0]) == 2:
-        pass
+    #elif int(inputs[0]) == 2:
+        #char=input("\nDigite la característica de contenido que desea averiguar: ")
+        #print("\nBuscando número de reproducciones con "+char+" en un rango: ")
+        #minValue = input("Valor mínimo: ")
+        #maxValue = input("Valor máximo: ")
+        #totalTracks = controller.getTracksByRangeChar(cont,char, minValue, maxValue)
+        #totalArtists=
+        #print("Para "+char+"entre "+minValue+" y "+maxValue" :")
+        #print("\nTotal de reproducciones: " + str(totalTracks))
+        #print("Total de artistas únicos: " + str(totalArtists))
+        #pass
 
     else:
         sys.exit(0)
