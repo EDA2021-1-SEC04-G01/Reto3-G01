@@ -88,6 +88,7 @@ while True:
         print("\nPara "+char+" entre "+minValue+" y "+maxValue+":")
         print("Total de reproducciones: " + str(totalTracks))
         print("Total de artistas únicos: " + str(totalArtists))
+        controller.clearChar(cont,key)
         print()
 
     elif int(inputs[0]) == 3:
@@ -100,14 +101,63 @@ while True:
         minDance=input("Digite el valor mínimo de la característica Danceability: ")
         maxDance=input("Digite el valor mánimo de la característica Danceability: ")
         print("\nBuscando música para festejar: ")
-        totalSongs=controller.getPartySongs(cont,minEnergy, maxEnergy,minDance, maxDance)
-        #randomExs=controller.randomExs(cont)
+        totalSongs=controller.getRecommendedSongs(cont,minEnergy, maxEnergy,minDance, maxDance)
         print("\nPara Energy (Energía) entre "+minEnergy+" y "+maxEnergy+" y Danceability (Capacidad de Baile) entre "+minDance+" y "+maxDance+":")
         print("Total de pistas únicas: " + str(totalSongs))
-        #print("\n5 pistas aleatorias dentro de los rangos:" + str(randomExs)
+        controller.clearChar(cont,"char2")
+        controller.clearChar(cont,"char3")
         print()
 
+    elif int(inputs[0]) == 4:
+        instrumentalness="instrumentalness"
+        tempo="tempo"
+        controller.loadDataChar(cont, songfile, instrumentalness, "char2")
+        controller.loadDataChar(cont, songfile, tempo, "char3")
+        minIns=input("\nDigite el valor mínimo de la característica Instrumentalness: ")
+        maxIns=input("Digite el valor mánimo de la característica Instrumentalness: ")
+        minTempo=input("Digite el valor mínimo de la característica Tempo: ")
+        maxTempo=input("Digite el valor mánimo de la característica Tempo: ")
+        print("\nBuscando música para estudiar: ")
+        totalSongs=controller.getRecommendedSongs(cont,minIns, maxIns,minTempo, maxTempo)
+        print("\nPara Instrumentalness entre "+minIns+" y "+maxIns+" y Tempo entre "+minTempo+" y "+maxTempo+":")
+        print("Total de pistas únicas: " + str(totalSongs))
+        controller.clearChar(cont,"char2")
+        controller.clearChar(cont,"char3")
+
+    elif int(inputs[0]) == 5:
+        genderLst=input("\nDigite la lista de géneros musicales que se desea buscar. (ej.: Reggae, Hip-hop, Pop): ")
+        newGender=int(input("Si desea agregar un nuevo género musical en la búsqueda presione 1, de lo contrario, 0: "))
+        if newGender==1:
+            print("\ndigite las siguientes variables para el nuevo género musical: ")
+            name=input("Nombre único para el nuevo género musical: ")
+            minTempo=input("Valor mínimo del Tempo del nuevo género musical: ")
+            maxTempo=input("Valor máximo del Tempo del nuevo género musical: ")
+            print("\nSe ha creado el nuevo género musical")
+            controller.loadDataChar(cont, songfile, "tempo", "char")
+            newGenTotals=controller.newGender(cont,minTempo,maxTempo)
+            print("\n(Total de reproducciones en "+name+" y el total de artistas únicos) y algunos artistas: " + str(newGenTotals))
+
+            controller.clearChar(cont,"char")
+        
+        genLst=genderLst.split(", ")
+
+        for gender in genLst:
+    
+            controller.loadDataChar(cont, songfile, "tempo", "char")
+            totals=controller.BPMbyGender(cont,str(gender))
+            print("\nTotal de reproducciones en "+str(gender)+" y el total de artistas únicos: " + str(totals))
+            controller.clearChar(cont,"char")
+
+        #totalTracks= #es desde el tempo mas chiquito hasta el mas grande
+        #print("\nTotal de reproducciones: " + str(totalTracks))
+
+    elif int(inputs[0]) == 6:
+
+        pass
 
     else:
         sys.exit(0)
 sys.exit(0)
+
+        
+

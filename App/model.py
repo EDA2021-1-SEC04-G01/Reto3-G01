@@ -32,6 +32,7 @@ from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.ADT import map as m
+import random 
 
 assert cf
 
@@ -135,6 +136,13 @@ def updateChar(map, track, char):
         addCharIndex(charentry, track, 'track_id')
     return map
 
+def clearChar(analyzer, char):
+
+    analyzer[char] = None
+    analyzer[char]=om.newMap(omaptype='RBT',
+                                      comparefunction=compareDates)
+
+
 def addCharIndex(charentry, track, indexChosen):
     """
     Actualiza un indice de artistas.  Este indice tiene una lista
@@ -160,7 +168,7 @@ def newDataEntry(track):
     """
     """
     entry = {'info': None, 'lstTracks': None}
-    entry['info'] = mp.newMap(numelements=30,
+    entry['info'] = mp.newMap(numelements=50,
                                      maptype='PROBING',
                                      comparefunction=compareValue)
     entry['lstTracks'] = lt.newList('SINGLE_LINKED', compareDates)
@@ -175,6 +183,80 @@ def newArtistEntry(artist, track):
     artentry['index'] = artist
     artentry['lstindex'] = lt.newList('SINGLELINKED', compareValue)
     return artentry
+
+def newGender(analyzer,minTempo,maxTempo):
+
+    tracks=getTracksByRangeChar(analyzer, minTempo, maxTempo, "char")
+    artists=indexHashSize(analyzer, minTempo, maxTempo, "char")
+    samples=indexHashSamples(analyzer,minTempo, maxTempo, "char")
+
+    return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
+     
+def BPMbyGender(analyzer,gen):
+
+    if "Reggae"==gen:
+        tracks=getTracksByRangeChar(analyzer, str(60), str(90), "char")
+        artists=indexHashSize(analyzer, str(60), str(90), "char")
+        samples=indexHashSamples(analyzer,str(60), str(90), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
+
+    if "Down-tempo"==gen:
+        tracks=getTracksByRangeChar(analyzer, str(70), str(100), "char")
+        artists=indexHashSize(analyzer,str(70), str(100), "char")
+        samples=indexHashSamples(analyzer,str(70), str(100), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
+
+    if "Chill-out"==gen:
+        tracks=getTracksByRangeChar(analyzer, str(90), str(120), "char")
+        artists=indexHashSize(analyzer,  str(90), str(120), "char")
+        samples=indexHashSamples(analyzer,str(90), str(120), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
+    
+    if "Hip-hop"==gen:
+        tracks=getTracksByRangeChar(analyzer, str(85), str(115), "char")
+        artists=indexHashSize(analyzer, str(85), str(115), "char")
+        samples=indexHashSamples(analyzer,str(85), str(115), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
+
+    if "Jazz and Funk"==gen:
+        tracks=getTracksByRangeChar(analyzer, str(120), str(125), "char")
+        artists=indexHashSize(analyzer,  str(120), str(125), "char")
+        samples=indexHashSamples(analyzer, str(120), str(125), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
+
+    if "Pop"==gen:
+        tracks=getTracksByRangeChar(analyzer, str(100), str(130), "char")
+        artists=indexHashSize(analyzer, str(100), str(130), "char")
+        samples=indexHashSamples(analyzer,str(100), str(130), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
+    
+    if "R&B"==gen:
+        tracks=getTracksByRangeChar(analyzer, str(60), str(80), "char")
+        artists=indexHashSize(analyzer, str(60), str(80), "char")
+        samples=indexHashSamples(analyzer,str(60), str(80), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)       
+
+    if "Rock"==gen:
+
+        tracks=getTracksByRangeChar(analyzer, str(110), str(140), "char")
+        artists=indexHashSize(analyzer, str(110), str(140), "char")
+        samples=indexHashSamples(analyzer,str(110), str(140), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
+
+    if "Metal"==gen:
+        tracks=getTracksByRangeChar(analyzer, str(110), str(160), "char")
+        artists=indexHashSize(analyzer, str(110), str(160), "char")
+        samples=indexHashSamples(analyzer,str(110), str(160), "char")
+
+        return str(tracks)+" reproducciones y "+str(artists)+" artistas. \n Algunos artistas son: "+str(samples)
 
 # Funciones de consulta
 
@@ -227,7 +309,30 @@ def getTracksByRangeChar(analyzer, minValue, maxValue, char):
     totTracks = 0
     for lstchar in lt.iterator(lst):
         totTracks += lt.size(lstchar['lstTracks'])
+    
     return totTracks
+
+def indexHashSamples(analyzer,minValue, maxValue, char):
+
+    lst=om.keys(analyzer[char], minValue, maxValue)
+    aux=[]
+    size=0
+  
+    for value in lt.iterator(lst):   
+        charValue = om.get(analyzer[char], value)
+        ids = me.getValue(charValue)["info"]
+        idValues = m.keySet(ids)
+
+        for key in lt.iterator(idValues):   
+            if str(key) not in aux:
+                aux.append(key)
+                size+=1
+        
+    if size>10:
+        randomIndex=random.choices(aux, k=10)
+    else:
+        randomIndex=random.choices(aux, k=size)
+    return randomIndex
 
 
 def indexHashSize(analyzer,minValue, maxValue, char):
@@ -249,7 +354,7 @@ def indexHashSize(analyzer,minValue, maxValue, char):
     return size
     
 
-def getPartySongs(analyzer,minEnergy, maxEnergy,minDance, maxDance):
+def getRecommendedSongs(analyzer,minEnergy, maxEnergy,minDance, maxDance):
 
     energyAux=[]
     energySongs=om.keys(analyzer["char2"], minEnergy, maxEnergy)
@@ -287,7 +392,13 @@ def getPartySongs(analyzer,minEnergy, maxEnergy,minDance, maxDance):
     for i in combined:
         totSongs+=1
 
-    return totSongs
+    
+    if totSongs>5:
+        randomIndex=random.choices(combined, k=5)
+    else:
+        randomIndex=random.choices(combined, k=totSongs)
+
+    return str(totSongs)+"\n5 pistas aleatorias dentro de los rangos:"+str(randomIndex)
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
@@ -335,3 +446,4 @@ def combinedList(list1,list2):
     return result
     
     pass
+

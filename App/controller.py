@@ -65,6 +65,15 @@ def loadDataChar(analyzer, songsfile, char, key):
         model.addTrackChar(analyzer, track, char, key)
     return analyzer
 
+def clearChar(analyzer, char):
+    return model.clearChar(analyzer,char)
+
+def newGender(analyzer,minTempo,maxTempo):
+    return model.newGender(analyzer,minTempo,maxTempo)
+
+def BPMbyGender(analyzer,lst):
+    return model.BPMbyGender(analyzer,lst)
+
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
@@ -117,8 +126,10 @@ def indexHashSize(analyzer, minValue, maxValue, char):
     return model.indexHashSize(analyzer,minValue, maxValue, char)
 
 
-def getPartySongs(analyzer,minEnergy, maxEnergy,minDance, maxDance):
+def getRecommendedSongs(analyzer,minEnergy, maxEnergy,minDance, maxDance):
 
-    return model.getPartySongs(analyzer,minEnergy, maxEnergy,minDance, maxDance)
+    return model.getRecommendedSongs(analyzer,minEnergy, maxEnergy,minDance, maxDance)
+
+
 
 
