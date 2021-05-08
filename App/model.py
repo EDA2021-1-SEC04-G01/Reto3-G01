@@ -32,6 +32,7 @@ from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.ADT import map as m
+
 assert cf
 
 """
@@ -52,7 +53,9 @@ def newAnalyzer():
     analyzer = {'tracks': None,
                 'songs': None,
                 'artists': None,
-                'char': None
+                'char': None,
+                'char2': None,
+                'char3': None,
                 }
 
     analyzer['tracks'] = lt.newList('SINGLE_LINKED', compareIds)
@@ -62,6 +65,11 @@ def newAnalyzer():
                                       comparefunction=compareDates)
     analyzer['char'] = om.newMap(omaptype='RBT',
                                       comparefunction=compareDates)
+    analyzer['char2'] = om.newMap(omaptype='RBT',
+                                      comparefunction=compareDates)
+    analyzer['char3'] = om.newMap(omaptype='RBT',
+                                      comparefunction=compareDates)
+                                      
     return analyzer
 
 # Funciones para agregar informacion al catalogo
@@ -104,10 +112,10 @@ def updateArtists(map, track):
     
     return map
 
-def addTrackChar(analyzer, track, char):
+def addTrackChar(analyzer, track, char, key):
     """
     """
-    updateChar(analyzer['char'], track, char)
+    updateChar(analyzer[key], track, char)
     return analyzer
 
 def updateChar(map, track, char):
@@ -121,10 +129,13 @@ def updateChar(map, track, char):
     else:
         charentry = me.getValue(entry)
     
-    addCharIndex(charentry, track)
+    if char=="char":
+        addCharIndex(charentry, track, 'artist_id')
+    else:
+        addCharIndex(charentry, track, 'track_id')
     return map
 
-def addCharIndex(charentry, track):
+def addCharIndex(charentry, track, indexChosen):
     """
     Actualiza un indice de artistas.  Este indice tiene una lista
     de tracks y una tabla de hash cuya llave es el artista y
@@ -134,14 +145,14 @@ def addCharIndex(charentry, track):
     lst = charentry['lstTracks']
     lt.addLast(lst, track)
     index = charentry['info']
-    artistentry = m.get(index, track['artist_id'])
+    artistentry = m.get(index, track[indexChosen])
     if (artistentry is None):
-        entry = newArtistEntry(track['artist_id'], track)
-        lt.addLast(entry['lstartists'], track)
-        m.put(index, track['artist_id'], entry)
+        entry = newArtistEntry(track[indexChosen], track)
+        lt.addLast(entry['lstindex'], track)
+        m.put(index, track[indexChosen], entry)
     else:
         entry = me.getValue(artistentry)
-        lt.addLast(entry['lstartists'], track)
+        lt.addLast(entry['lstindex'], track)
     return charentry
 # Funciones para creacion de datos
 
@@ -155,14 +166,14 @@ def newDataEntry(track):
     entry['lstTracks'] = lt.newList('SINGLE_LINKED', compareDates)
     return entry
 
-def newArtistEntry(artist, crime):
+def newArtistEntry(artist, track):
     """
-    Crea una entrada en el indice por tipo de crimen, es decir en
+    Crea una entrada en el indice por artista, es decir en
     la tabla de hash, que se encuentra en cada nodo del arbol.
     """
-    artentry = {'artist': None, 'lstartists': None}
-    artentry['artist'] = artist
-    artentry['lstartists'] = lt.newList('SINGLELINKED', compareValue)
+    artentry = {'index': None, 'lstindex': None}
+    artentry['index'] = artist
+    artentry['lstindex'] = lt.newList('SINGLELINKED', compareValue)
     return artentry
 
 # Funciones de consulta
@@ -207,21 +218,76 @@ def artistsSize(analyzer):
     """
     return om.size(analyzer['artists'])
 
-def getTracksByRangeChar(analyzer, minValue, maxValue):
+def getTracksByRangeChar(analyzer, minValue, maxValue, char):
     """
     Retorna el numero de registros de eventos de escucha en un rango de una 
     característica de contenido dada.
     """
-    lst = om.values(analyzer['char'], minValue, maxValue)
+    lst = om.values(analyzer[char], minValue, maxValue)
     totTracks = 0
     for lstchar in lt.iterator(lst):
         totTracks += lt.size(lstchar['lstTracks'])
     return totTracks
 
-def artistsCharSize(analyzer,minValue, maxValue):
 
-    return lt.size(om.values(analyzer['char'], minValue, maxValue))
+def indexHashSize(analyzer,minValue, maxValue, char):
 
+    lst=om.keys(analyzer[char], minValue, maxValue)
+    size=0
+    aux=[]
+  
+    for value in lt.iterator(lst):   
+        charValue = om.get(analyzer[char], value)
+        ids = me.getValue(charValue)["info"]
+        idValues = m.keySet(ids)
+
+        for key in lt.iterator(idValues):   
+            if str(key) not in aux:
+                aux.append(key)
+                size+=1
+            
+    return size
+    
+
+def getPartySongs(analyzer,minEnergy, maxEnergy,minDance, maxDance):
+
+    energyAux=[]
+    energySongs=om.keys(analyzer["char2"], minEnergy, maxEnergy)
+    s1=0
+
+    for value in lt.iterator(energySongs):   
+        charValue = om.get(analyzer["char2"], value)
+        ids = me.getValue(charValue)["info"]
+        idValues = m.keySet(ids)
+
+        for key in lt.iterator(idValues):   
+            if str(key) not in energyAux:
+                energyAux.append(key)
+                s1+=1
+
+    danceAux=[]
+    danceSongs=om.keys(analyzer["char3"], minDance, maxDance)
+    s2=0
+    for value in lt.iterator(danceSongs):   
+        charValue = om.get(analyzer["char3"], value)
+        ids = me.getValue(charValue)["info"]
+        idValues = m.keySet(ids)
+
+        for key in lt.iterator(idValues):   
+            if str(key) not in danceAux:
+                danceAux.append(key)
+                s2+=1
+
+    ##comparando las dos listas
+
+    combined=combinedList(energyAux,danceAux)
+
+    totSongs=0
+   
+    for i in combined:
+        totSongs+=1
+
+    return totSongs
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
@@ -259,4 +325,13 @@ def compareValue(value1, value2):
     else:
         return -1
 
-# Funciones de ordenamiento
+# Funciones utilizadas para comparar elementos entre dos listas
+
+def combinedList(list1,list2):
+    result=[]
+    for element in list1:
+        if element in list2:
+            result.append(element)
+    return result
+    
+    pass

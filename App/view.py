@@ -76,18 +76,37 @@ while True:
         print()
         print('Últimos 5 eventos de escucha cargados: ' + str(controller.lastTracks(cont)))
 
-    elif int(inputs[0]) == 2:   
+    elif int(inputs[0]) == 2:  
+        key="char" 
         char=input("\nDigite la característica de contenido que desea averiguar: ")
-        controller.loadDataChar(cont, songfile, char)
+        controller.loadDataChar(cont, songfile, char, key)
         print("\nBuscando número de reproducciones con "+char+" en un rango: ")
         minValue = input("Valor mínimo: ")
         maxValue = input("Valor máximo: ")
-        totalTracks = controller.getTracksByRangeChar(cont, minValue, maxValue)
-        totalArtists=controller.artistsCharSize(cont, minValue, maxValue)
+        totalTracks = controller.getTracksByRangeChar(cont, minValue, maxValue, key)
+        totalArtists=controller.indexHashSize(cont, minValue, maxValue, key)
         print("\nPara "+char+" entre "+minValue+" y "+maxValue+":")
         print("Total de reproducciones: " + str(totalTracks))
         print("Total de artistas únicos: " + str(totalArtists))
-        pass
+        print()
+
+    elif int(inputs[0]) == 3:
+        energy="energy"
+        danceability="danceability"
+        controller.loadDataChar(cont, songfile, energy, "char2")
+        controller.loadDataChar(cont, songfile, danceability, "char3")
+        minEnergy=input("\nDigite el valor mínimo de la característica Energy: ")
+        maxEnergy=input("Digite el valor mánimo de la característica Energy: ")
+        minDance=input("Digite el valor mínimo de la característica Danceability: ")
+        maxDance=input("Digite el valor mánimo de la característica Danceability: ")
+        print("\nBuscando música para festejar: ")
+        totalSongs=controller.getPartySongs(cont,minEnergy, maxEnergy,minDance, maxDance)
+        #randomExs=controller.randomExs(cont)
+        print("\nPara Energy (Energía) entre "+minEnergy+" y "+maxEnergy+" y Danceability (Capacidad de Baile) entre "+minDance+" y "+maxDance+":")
+        print("Total de pistas únicas: " + str(totalSongs))
+        #print("\n5 pistas aleatorias dentro de los rangos:" + str(randomExs)
+        print()
+
 
     else:
         sys.exit(0)
