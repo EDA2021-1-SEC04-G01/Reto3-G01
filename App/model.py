@@ -123,14 +123,15 @@ def updateChar(map, track, char):
     """
     """
     CharValue = track[char]
+    if char == "created_at":
+        CharValue= datetime.datetime.strptime(CharValue, '%Y-%m-%d %H:%M:%S').time()
     entry = om.get(map, CharValue)
     if entry is None:
         charentry = newDataEntry(track)
         om.put(map, CharValue, charentry)
     else:
         charentry = me.getValue(entry)
-    
-    if char=="char":
+    if char== "char":
         addCharIndex(charentry, track, 'artist_id')
     else:
         addCharIndex(charentry, track, 'track_id')
@@ -399,6 +400,41 @@ def getRecommendedSongs(analyzer,minEnergy, maxEnergy,minDance, maxDance):
         randomIndex=random.choices(combined, k=totSongs)
 
     return str(totSongs)+"\n5 pistas aleatorias dentro de los rangos:"+str(randomIndex)
+
+def getGenreByTime(analyzer,begtime,fintime):
+    aux= {}
+    timesongs=om.keys(analyzer["char"], begtime, fintime)
+    for value in lt.iterator(timeSongs):   
+        charValue = om.get(analyzer["char"], value)
+        ids = me.getValue(charValue)['lstTracks']
+        
+
+        for track in lt.iterator(ids):   
+            CharValue = track["tempo"]
+            entry = om.get(analyzer["char2"], CharValue)
+            if entry is None:
+                charentry = newDataEntry(track)
+                om.put(analyzer["char2"], CharValue, charentry)
+            else:
+                charentry = me.getValue(entry)
+            addCharIndex(charentry, track, 'track_id')
+    aux["reggae"]= getTracksByRangeChar(analyzer, str(60), str(90), "char2")
+    aux["downtempo"]= getTracksByRangeChar(analyzer, str(70), str(100), "char2")
+    aux["chillout"]= getTracksByRangeChar(analyzer, str(90), str(120), "char2")
+    aux["hiphop"]= getTracksByRangeChar(analyzer, str(85), str(115), "char2")
+    aux["jazzfunk"]= getTracksByRangeChar(analyzer, str(120), str(125), "char2")
+    aux["pop"]= getTracksByRangeChar(analyzer, str(100), str(130), "char2")
+    aux["rnb"]= getTracksByRangeChar(analyzer, str(60), str(80), "char2")
+    aux["rock"]= getTracksByRangeChar(analyzer, str(110), str(140), "char2")
+    aux["metal"]= getTracksByRangeChar(analyzer, str(110), str(160), "char2")
+    genre= max(aux, key=aux.get)
+    print("El genero mas escuchado es "+genre+" con "+str(aux[genre])+" reproducciones")
+    
+    
+            
+                
+
+
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
