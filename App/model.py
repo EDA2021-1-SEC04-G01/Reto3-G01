@@ -32,7 +32,9 @@ from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.ADT import map as m
-import random 
+import random
+import datetime
+import csv
 
 assert cf
 
@@ -70,6 +72,9 @@ def newAnalyzer():
                                       comparefunction=compareDates)
     analyzer['char3'] = om.newMap(omaptype='RBT',
                                       comparefunction=compareDates)
+    analyzer['char4'] = mp.newMap(numelements=50,
+                                     maptype='PROBING',
+                                     comparefunction=compareValue)
                                       
     return analyzer
 
@@ -122,6 +127,10 @@ def addTrackChar(analyzer, track, char, key):
 def updateChar(map, track, char):
     """
     """
+    artist= False
+    if "artisthash" in char:
+        char=char.replace("artisthash", "")
+        artist= True
     CharValue = track[char]
     if char == "created_at":
         CharValue= datetime.datetime.strptime(CharValue, '%Y-%m-%d %H:%M:%S').time()
@@ -131,7 +140,7 @@ def updateChar(map, track, char):
         om.put(map, CharValue, charentry)
     else:
         charentry = me.getValue(entry)
-    if char== "char":
+    if artist:
         addCharIndex(charentry, track, 'artist_id')
     else:
         addCharIndex(charentry, track, 'track_id')
@@ -403,12 +412,11 @@ def getRecommendedSongs(analyzer,minEnergy, maxEnergy,minDance, maxDance):
 
 def getGenreByTime(analyzer,begtime,fintime):
     aux= {}
+    auxlist= []
     timesongs=om.keys(analyzer["char"], begtime, fintime)
-    for value in lt.iterator(timeSongs):   
+    for value in lt.iterator(timesongs):   
         charValue = om.get(analyzer["char"], value)
-        ids = me.getValue(charValue)['lstTracks']
-        
-
+        ids = me.getValue(charValue)['lstTracks']        
         for track in lt.iterator(ids):   
             CharValue = track["tempo"]
             entry = om.get(analyzer["char2"], CharValue)
@@ -429,12 +437,90 @@ def getGenreByTime(analyzer,begtime,fintime):
     aux["metal"]= getTracksByRangeChar(analyzer, str(110), str(160), "char2")
     genre= max(aux, key=aux.get)
     print("El genero mas escuchado es "+genre+" con "+str(aux[genre])+" reproducciones")
+    if genre == "reggae":
+        minValue= 60
+        maxValue= 90
+    elif genre == "downtempo":
+        minValue= 70
+        maxValue= 100
+    elif genre == "chillout":
+        minValue= 90
+        maxValue= 120
+    elif genre == "hiphop":
+        minValue= 85
+        maxValue= 115
+    elif genre == "jazzfunk":
+        minValue= 120
+        maxValue= 125
+    elif genre == "pop":
+        minValue= 100
+        maxValue= 130
+    elif genre == "rnb":
+        minValue= 60
+        maxValue= 80
+    elif genre == "rock":
+        minValue= 110
+        maxValue= 140
+    elif genre == "metal":
+        minValue= 110
+        maxValue= 160
+    genrelist= om.values(analyzer["char2"], str(minValue), str(maxValue))
+    for i in lt.iterator(genrelist):
+        for k in lt.iterator(i['lstTracks']):
+            if k["track_id"] not in auxlist:
+                auxlist.append(k["track_id"])
+    songsfile = cf.data_dir + "user_track_hashtag_timestamp-small.csv"
+    input_file = csv.DictReader(open(songsfile, encoding="utf-8"),
+                                delimiter=",")
+    for line in input_file:
+        song= line["track_id"]
+        entry= om.get(analyzer["char3"], song)
+        if entry is None:
+            hashtag= []
+            hashtag.append(line["hashtag"])
+            om.put(analyzer["char3"], song, hashtag)
+        else:
+            a= me.getValue(entry)
+            if line["hashtag"] not in a:              
+               a.append(line["hashtag"])
+    songsfile2 = cf.data_dir + "sentiment_values.csv"
+    input_file2 = csv.DictReader(open(songsfile2, encoding="utf-8"),
+                                delimiter=",")
+    for line in input_file2:
+        hashtag= line["hashtag"]
+        if line["vader_avg"] == "" or line["vader_avg"] == " ":
+            value= 0
+        else:
+            value= float(line["vader_avg"])    
+        mp.put(analyzer["char4"], hashtag, value)
     
-    
-            
-                
-
-
+    top10= {}
+    tracks= {}
+    for i in auxlist:
+        vadersum= 0
+        cont= 0
+        hashtags=om.get(analyzer["char3"], i)
+        hashtags=me.getValue(hashtags)
+        top10[i]= len(hashtags)
+        for k in hashtags:
+            k= k.lower()
+            vaderval=mp.get(analyzer["char4"], k)
+            if vaderval != None:              
+                vaderval=me.getValue(vaderval)
+                if vaderval > 0:
+                    cont+=1
+                    vadersum += vaderval 
+        if cont != 0: 
+          vaderavg= vadersum/ cont
+        else:
+          vaderavg= 0
+        tracks[i]= vaderavg
+    cont= 0
+    while cont < 10:
+       a=max(top10, key=top10.get)
+       print("\n TOP "+str(cont+1)+" track: "+a+" with "+str(top10[a])+" hashtags"+" and VADER = "+str(tracks[a]))
+       del top10[a]
+       cont +=1
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
@@ -482,4 +568,5 @@ def combinedList(list1,list2):
     return result
     
     pass
+
 
